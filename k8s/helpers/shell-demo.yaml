@@ -1,0 +1,25 @@
+# Run with `kubectl exec --stdin --tty shell-demo -- /bin/bash` to get a shell into the pod
+apiVersion: v1
+kind: Pod
+metadata:
+  name: shell-demo
+spec:
+  containers:
+    - name: tde-demo
+      image: ghcr.io/todo-everything/todo-everything-django:latest-arm
+      imagePullPolicy: Always
+      envFrom:
+        - configMapRef:
+            name: tde-django
+  imagePullSecrets:
+    - name: ghcr-login-secret
+  hostNetwork: true
+  dnsPolicy: Default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tde-django
+  namespace: default
+data:
+  ALLOWED_HOSTS: "local.whatamidoing.today"
