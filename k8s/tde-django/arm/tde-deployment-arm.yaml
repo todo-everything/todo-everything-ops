@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tde-django
+  labels:
+    app: tde-django
+spec:
+  selector:
+    matchLabels:
+      app: tde-django
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: tde-django
+    spec:
+      containers:
+        - name: tde-django
+          image: ghcr.io/todo-everything/todo-everything-django:latest-arm
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: tde-django
+      imagePullSecrets:
+        - name: ghcr-login-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tde-django-service
+spec:
+  # LoadBalancer used with cloud services to create clusterIP and ports
+  #  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  selector:
+    app: tde-django
+  externalIPs:
+    - 192.168.50.200
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tde-django
+  namespace: default
+data:
+  ALLOWED_HOSTS: "local.whatamidoing.today"
+  DATABASE_NAME: "todo_everything"
+  DATABASE_USER: "postgres"
+  DATABASE_PASS: "postgres"
+  DATABASE_HOST: "postgres"
+  DATABASE_PORT: "5432"
+  # TODO: Normalize `rabbitmq` Helm service deployment.
+  RABBITMQ_URL: "pyamqp://guest:guest@rabbitmq-1697869705:5672//"

@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tde-django-jobs
+  labels:
+    app: tde-django-jobs
+spec:
+  selector:
+    matchLabels:
+      app: tde-django-jobs
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: tde-django-jobs
+    spec:
+      containers:
+        - name: tde-django-jobs
+          image: ghcr.io/todo-everything/todo-everything-django-jobs:latest-arm
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: tde-django
+      imagePullSecrets:
+        - name: ghcr-login-secret
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tde-django-jobs
+  namespace: default
+data:
+  ALLOWED_HOSTS: "local.whatamidoing.today"
+  DATABASE_NAME: "todo_everything"
+  DATABASE_USER: "postgres"
+  DATABASE_PASS: "postgres"
+  DATABASE_HOST: "postgres"
+  DATABASE_PORT: "5432"
+  # TODO: Normalize `rabbitmq` Helm service deployment.
+  RABBITMQ_URL: "pyamqp://guest:guest@rabbitmq-1697869705:5672//"
