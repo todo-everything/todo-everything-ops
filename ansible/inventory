@@ -1,0 +1,4 @@
+# Add nodes that will make up kubernetes cluster
+192.168.50.200
+192.168.50.201
+192.168.50.202

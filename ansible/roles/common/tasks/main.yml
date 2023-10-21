@@ -1,0 +1,35 @@
+---
+- name: Make SSH dir
+  file:
+    path: "~/.ssh"
+    state: directory
+    mode: 0744
+
+- name: Ensure `~/.ssh/authorize_keys` exists
+  file:
+    path: "~/.ssh/authorized_keys"
+    state: touch
+    mode: 0600
+
+- name: Append public key
+  lineinfile:
+    path: "~/.ssh/authorized_keys"
+    line: "{{ pubkey }}"
+  vars:
+    # Add your public key here
+    pubkey:
+
+- name: Update apt cache
+  become: yes
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+
+- name: Install core things
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - vim
